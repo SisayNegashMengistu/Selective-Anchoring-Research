@@ -1,519 +1,437 @@
-# New Research Blueprint
+# New Research Blueprint (Revised — Prompt 1.5)
 
-**Manuscript:** Selective Anchoring Architecture for LMIC Disease Surveillance  
+**Manuscript working title:** Hierarchical Selective Anchoring for LMIC Disease Surveillance: Submission Accountability and Explicit Privacy Semantics on a Blockchain Coordination Layer  
 **Prepared:** 2026-08-12  
-**Stage:** Pre-rewrite forensic audit — blueprint for revised research direction  
-**Note:** This document describes what *should* be done. It does not invent results, implementations, or experiments that have not yet been performed.
+**Revised:** 2026-08-12 (Prompt 1.5 — design refinement only; no prototype implementation)  
+**Status:** Implementation-ready research design. No results, deployments, or experiments are claimed as completed.
+
+---
+
+## 0. Evidence Separation Rule (Binding)
+
+| Category | Definition | Use in paper |
+|---|---|---|
+| **Historical manuscript claims** | Numbers, tests, SUMI, Rinkeby, gas, IPFS latency stated in `original/` without reproducible artefacts | Cite only as *unsupported prior manuscript claims*; never as results |
+| **New reproducibility evidence** | Artefacts produced under `prototype/` and `evaluation/` after Prompt 2+ | Sole basis for quantitative claims in the revised paper |
+| **Analytical claims** | Storage ratios, threat tables, design comparisons derived without runtime measurement | Allowed if labeled analytical and reproducible from stated assumptions |
+
+**Never** present newly generated evidence as historical evidence. **Never** carry forward unsupported historical figures (gas ranges, 24/24 tests, Rinkeby 12–14 s, IPFS 340 ms, SUMI 60.46–68.96, storage “measured” as experiment without scripts).
 
 ---
 
 ## Section A — Defensible Claims Assessment
 
-### A. Claims Defensible Immediately (without new experiments)
+### A. Defensible immediately (no new experiments)
 
-1. **Problem framing**: LMIC DEWS systems suffer from data centralization, metadata-level privacy exposure, unscalable ledger replication, and resource-uniform participation models. This is defensible from the literature.
+1. **Problem framing:** LMIC DEWS systems face centralization risk, weak cross-organization provenance, resource asymmetry across administrative tiers, and tension between auditability and confidentiality. Defensible from public-health and digital-health literature (to be verified in bibliography rebuild).
+2. **Architectural design rationale:** Using a blockchain as a *coordination and accountability layer* (anchors, authorization state, provenance events, submission counts) while keeping encrypted payloads off-chain is a coherent design response. Defensible analytically; **not** claimed as inherently novel solely because it uses Ethereum + IPFS.
+3. **Tier mapping:** Mapping roles and scopes to a five-tier public-health hierarchy (community → facility/application → district → regional → national), informed by Ethiopian PHEM-style organization, is a defensible design choice when labeled as a design mapping.
+4. **Analytical storage comparison:** Ratio of representative encrypted/plain payload sizes to on-chain anchor calldata size is analytically derivable if payloads and encoding are specified and labeled analytical.
+5. **Threat model (analytical):** Threat-to-mitigation tables are defensible when limitations (especially revocation and metadata leakage) are stated honestly.
+6. **Consensus design rationale:** Choosing a local permissioned/PoA-style environment for prototype measurement is a design/engineering choice; comparative PoA/PBFT/DPoS remains analytical unless measured.
+7. **Completeness as submission accountability:** Period-level counting of expected vs received anchors is a legitimate accountability mechanism when **not** described as epidemiological field completeness.
 
-2. **Architectural design**: A selective-anchoring hybrid architecture — encrypted IPFS off-chain storage + smart-contract coordination layer — is a well-reasoned design response to the identified problems. It can be defended analytically.
+### B. Claims requiring implementation (Prompt 2 core)
 
-3. **Tier mapping**: The five-tier topology maps coherently to the Ethiopian PHEM administrative hierarchy. This is defensible from the PHEM organizational structure.
+1. Role- and **scope-aware** AccessControl (not generic OpenZeppelin roles alone).
+2. ReportCoordinator with reporter registration and authorized anchor submission.
+3. ReportFactory as deployment/registry coordinator as needed by the design.
+4. CompletenessVerifier for expected-unit submission accounting and gap alerts.
+5. HMAC-based integrity commitment (not plaintext SHA-256).
+6. Hardhat tests, deployment scripts, gas reporter outputs, local-PoA latency scripts/logs.
 
-4. **Analytical storage comparison**: The calculation that IPFS payload (2.4–48.6 KB) is 12–217× larger than the calldata anchor (196–224 bytes) is analytically derivable and defensible as a design-level estimate, provided it is labeled explicitly as analytical.
+### C. Claims requiring optional data-layer integration
 
-5. **Threat model (descriptive)**: The threat-to-mitigation table is defensible as an analytical security analysis, provided it is labeled as analytical (not penetration-tested) and the IPFS revocation limitation is corrected.
+1. AES-256-GCM encrypt/decrypt of synthetic payloads.
+2. IPFS (or local IPFS-compatible) upload/download and CID recording.
+3. Optional IPFS retrieval latency measurements under documented conditions.
 
-6. **Consensus design rationale**: PoA selection for the prototype, with a descriptive comparison to DPoS/PBFT/Raft, is defensible as a design rationale if labeled as analytical (not measured).
+### D. Claims requiring stronger analysis only
 
-7. **CompletenessVerifier as event counter**: The verifier as a period-level submission counter (not field-level completeness inspector) is defensible and aligns with what the contract listing actually implements.
+1. Precise A–E privacy separation and revocation honesty.
+2. Metadata leakage analysis (addresses, timing, tier, CID presence).
+3. Blockchain necessity vs centralized DB + audit log vs signed transparency log.
+4. Analytical comparison to Hyperledger Fabric private data collections.
 
----
+### E. Remove from current contributions / results
 
-### B. Claims Requiring Implementation
+1. ZKP as contribution or implemented feature.
+2. FHIR workflows as contribution.
+3. Quantitative multi-consensus benchmarking as contribution.
+4. Dedicated edge/fog hardware as contribution.
+5. Any historical gas, Rinkeby, IPFS, SUMI, or 24/24 figures without new artefacts.
+6. End-to-end cryptographic revocation unless implemented and tested.
+7. National-scale deployment claims.
 
-1. **AccessControl contract with proper caller authentication** — grantAccess/revokeAccess must have access modifiers before any security claim can be made.
+### F. Future work (explicit non-contributions now)
 
-2. **ReportCoordinator anchorReport with reporter registration** — unrestricted submission must be fixed.
-
-3. **Key management layer** — AES key distribution, rotation, and revocation. Minimum: design document with pseudocode. Ideal: implemented in prototype.
-
-4. **HMAC-keyed integrity commitment** — replace SHA-256(plaintext) with HMAC-SHA-256(key, nonce, plaintext) or similar.
-
-5. **Mocha/Hardhat test suite** — 24+ test cases for AccessControl, ReportCoordinator, CompletenessVerifier; must be executable and produce logged output.
-
-6. **Deployment scripts** (Hardhat or Truffle) against a local chain.
-
-7. **IPFS integration code** (ipfs-http-client + AES-256-GCM client).
-
----
-
-### C. Claims Requiring New Experiments
-
-1. **Gas cost measurements** — Hardhat gas reporter against deployed contracts on local chain.
-2. **Block confirmation latency** — Hardhat or Ganache local PoA chain measurements (replaces Rinkeby).
-3. **IPFS retrieval latency** — local daemon first; distributed gateway under simulated network conditions second.
-4. **Functional test results** — Mocha output showing 24+ tests passing.
-5. **SUMI evaluation** — must be re-conducted with the actual implemented prototype; requires ethics documentation.
-
----
-
-### D. Claims Requiring Stronger Analysis Only
-
-1. **Revocation semantics** — a rigorous description of what `revokeAccess()` revokes (on-chain state only), what it does not revoke (IPFS access, key knowledge), and what additional mechanism (key rotation/proxy re-encryption) is required for true data revocation.
-
-2. **Metadata privacy analysis** — formal analysis of what on-chain metadata reveals (reporter pseudonymity, timing, tier, CID) and what countermeasures exist.
-
-3. **Blockchain necessity argument** — explicit comparison to transparency log and signed append-only log alternatives; argument for why smart contract programmability adds necessary value.
-
-4. **"Why Ethereum vs. Hyperledger Fabric"** — analytical comparison.
-
----
-
-### E. Claims That Should Be Removed from Current Contributions
-
-1. **ZKP as a current contribution** — not implemented; move to future work.
-2. **FHIR-aware interoperability workflows as a current contribution** — not implemented; move to future work.
-3. **"Comparative consensus framework" as a quantitative contribution** — reframe as design rationale.
-4. **"Edge and fog preprocessing" as a current contribution** — reframe as application-layer middleware design.
-5. **"24/24 test cases pass"** — remove until tests are implemented and run.
-6. **SUMI scores as reported** — remove or strongly qualify until re-conducted.
-7. **Gas cost dollar figures** — remove until ETH price and gas price basis are specified and measurements are taken.
-8. **Rinkeby block time data** — remove; replace with reproducible local chain data.
-
----
-
-### F. Future Work That Must Not Appear as Current Contributions
-
-1. ZKP circuit for privacy-preserving completeness verification
-2. FHIR SMART on FHIR integration
-3. Layer-2 rollup batch settlement
-4. Dedicated edge node hardware deployment
-5. Multi-site SUMI evaluation
-6. Production deployment and longitudinal evaluation
-7. Comparative PoA/PBFT/DPoS workload benchmarks
+ZKP; FHIR; Layer-2 rollups; dedicated edge hardware; proxy re-encryption / full cryptographic revocation; national-scale deployment; quantitative PoA/PBFT/DPoS benchmarking; multi-site usability; production longitudinal operation.
 
 ---
 
 ## Section B — Research Design Specification
 
-### 1. Proposed Working Title
+### 1. Final working title
 
-*"Selective Anchoring for Hierarchical Disease Surveillance in Resource-Constrained Settings: A Privacy-Layered Smart-Contract Architecture for LMIC Public Health Reporting"*
+**Hierarchical Selective Anchoring for LMIC Disease Surveillance: Submission Accountability and Explicit Privacy Semantics on a Blockchain Coordination Layer**
 
----
+Shorter running head (optional): *Hierarchical Selective Anchoring for LMIC Surveillance*
 
-### 2. Research Problem
+### 2. Research problem
 
-LMIC disease early warning and surveillance (DEWS) systems require multi-institutional, tamper-evident, privacy-preserving data sharing across organizations with asymmetric technical capacity — from resource-constrained community health posts to national surveillance centers. Existing architectures either centralize data (creating single-point-of-failure and governance risks) or treat blockchain as bulk storage (producing prohibitive cost, storage, and bandwidth demands). Neither class of solution adequately addresses the linked problems of privacy, resource asymmetry, completeness accountability, and cross-tier provenance in hierarchical LMIC public health systems.
+Hierarchical LMIC disease surveillance requires **tamper-evident provenance**, **cross-tier accountability for missing or delayed reports**, and **controlled sharing of sensitive payloads** among actors with unequal infrastructure. Centralized systems concentrate trust and weaken independent audit. Naïve “put health data on blockchain” designs impose untenable cost/bandwidth and expose content or low-entropy integrity digests. Prior hybrid designs often **conflate ledger authorization with off-chain confidentiality** and overclaim completeness or revocation.
 
----
+### 3. Research gap (tightened novelty; non-absolute)
 
-### 3. Research Gap
+Prior work extensively covers blockchain–health hybrids, IPFS hash-pointer patterns, and smart-contract ACLs. What remains under-specified for **hierarchical public-health reporting** is a single design that jointly treats:
 
-No prior blockchain-health architecture simultaneously addresses all of:
-1. Hybrid storage with explicit selective anchoring policy for LMIC surveillance payloads
-2. A privacy model that honestly distinguishes on-chain access state from IPFS content access and key distribution
-3. Asymmetric node-role design aligned to LMIC administrative hierarchies
-4. A completeness verification mechanism operating on anchoring events (not on encrypted content)
-5. A threat model that explicitly addresses the enforcement gap between on-chain revocation and off-chain ciphertext/key access
+1. **Hierarchy-aware selective anchoring** with asymmetric participation (who may submit, supervise, grant, and audit);
+2. **Event-based submission accountability** (expected reporting units vs received anchors; gap detection) without inspecting encrypted fields;
+3. **Explicit separation** of ledger authorization, ciphertext availability, decryption authorization, key distribution, and key revocation/rotation;
+4. **Reproducible evaluation of the coordination layer** (correctness, gas, controlled latency, storage/calldata) rather than unreproducible testnet anecdotes.
 
-The specific gap is not the combination of IPFS + blockchain (already published) but the **design-principled, threat-model-grounded application to the Ethiopian PHEM administrative hierarchy** with honest treatment of privacy limitations.
+Novelty is framed as this **combination and honest semantics** for LMIC hierarchical surveillance—not as “Ethereum + IPFS is new,” and **not** as an absolute claim that no prior system shares any component. Literature comparison must include stronger baselines (e.g., Fabric private data, MedRec-class systems, transparency logs) without self-serving all-Yes tables.
 
----
+### 4. Research questions (answerable chain: RQ → evidence → evaluation → conclusion)
 
-### 4. Research Questions
+**RQ1 — Hierarchy-aware selective anchoring and authorization.**  
+Can a smart-contract coordination layer enforce **role + administrative scope + report scope + operation** authorization for registration, anchoring, grant/revoke/expiry, and supervisory reads, while anchoring only commitments/CIDs/provenance—not raw surveillance payloads—and reducing on-chain footprint relative to direct on-chain storage of equivalent payloads?
 
-**RQ1.** Can a selective-anchoring smart-contract architecture enforce hierarchical provenance and access control for LMIC disease surveillance while achieving order-of-magnitude storage reduction relative to full on-chain data recording?
+| Link | Artefact |
+|---|---|
+| Evidence | Contract logic + tests + calldata/gas vs analytical full-payload baseline |
+| Evaluation | Functional authorization matrix tests; storage/calldata measurement; gas reporter |
+| Conclusion | Pass/fail authorization properties; measured/analytical footprint reduction **on the evaluated prototype environment** |
 
-**RQ2.** What are the precise semantics and limitations of blockchain-based access control when applied to IPFS-stored encrypted health data, and what additional mechanisms are required for meaningful revocation?
+**RQ2 — Privacy and revocation semantics.**  
+Under an explicit A–E model, what confidentiality and revocation properties does the architecture provide when payloads are encrypted off-chain and only authorization state and integrity commitments are on-chain—and which properties **require** key distribution/rotation beyond on-chain `revoke`/`expire`?
 
-**RQ3.** Can a period-level completeness verification mechanism operating on anchoring events, without inspecting encrypted payloads, effectively incentivize timely reporting in a hierarchical surveillance chain?
+| Link | Artefact |
+|---|---|
+| Evidence | Design specification + tests of on-chain grant/revoke/expiry + analytical (and optional integration) threat assessment |
+| Evaluation | Authorization state tests; documented non-goals for CID/key recall; threat table |
+| Conclusion | Precise claim boundaries: ledger auth ≠ cryptographic revocation |
 
----
+**RQ3 — Submission accountability (replaces “incentivize timely reporting”).**  
+Can period-based verification of **received submissions versus expected reporting units** detect and account for **missing or delayed** anchors (gap alerts / late classification) without decrypting or field-inspecting health payloads?
+
+| Link | Artefact |
+|---|---|
+| Evidence | CompletenessVerifier + tests with synthetic expected sets and delayed/missing actors |
+| Evaluation | Correct counts, ratios, gap events, late flags under scripted scenarios |
+| Conclusion | Accountability properties of the coordination layer—not behavioral “incentives,” not epidemiological completeness |
 
 ### 5. Objectives
 
-1. Design a selective-anchoring coordination architecture for five-tier LMIC disease surveillance, explicitly mapping architectural components to the Ethiopian PHEM administrative hierarchy.
-2. Implement four smart contracts (ReportCoordinator, AccessControl, ReportFactory, CompletenessVerifier) with correct caller authentication, expiry semantics, and honest completeness counting.
-3. Develop and execute a Hardhat test suite demonstrating functional correctness of the smart-contract coordination layer.
-4. Characterize gas costs, block confirmation latency, and IPFS retrieval latency through reproducible measurements.
-5. Produce a rigorous threat model that explicitly distinguishes ledger integrity guarantees from IPFS content access and key distribution.
+1. Specify and implement hierarchy- and scope-aware selective anchoring contracts.
+2. Specify integrity commitments via HMAC over a canonical encoding (not plaintext SHA-256).
+3. Implement submission-accountability completeness verification with gap/late detection.
+4. Document A–E privacy/revocation semantics without overclaiming.
+5. Produce reproducible Hardhat tests, deployment scripts, gas and local-PoA latency measurements, and evaluation logs.
+6. Optionally integrate AES-GCM + IPFS CID anchoring for end-to-end data-path demos.
+7. Keep historical manuscript claims quarantined from new evidence.
 
----
+### 6. Three contributions (revised)
 
-### 6. Defensible Contributions (Revised List)
+**C1. Hierarchy-aware selective anchoring and submission accountability.**  
+A coordination-layer design and prototype in which hierarchical public-health roles, administrative scopes, and report scopes govern who may register, anchor, supervise, and manage grants; only selective anchors (integrity commitment, optional CID, provenance metadata, authorization state, submission counts) appear on-chain; **CompletenessVerifier** accounts for expected vs received unit submissions and surfaces gaps/delays.
 
-**C1. Selective-anchoring architecture for hierarchical LMIC surveillance.**
-A principled design separating on-chain coordination (hashes, permissions, provenance, audit events) from off-chain encrypted payloads, mapped explicitly to the Ethiopian PHEM five-tier administrative structure. Novelty: application context, tier-aligned role model, and explicit treatment of enforcement limitations.
+**C2. Explicit privacy and revocation semantics for blockchain–IPFS health data.**  
+A precise A–E separation (ledger authorization; ciphertext availability; decryption authorization; key distribution; key revocation/rotation) stating that on-chain revoke/expire **do not** invalidate a known CID or a previously distributed key. Cryptographic revocation remains architecture/future work unless separately implemented.
 
-**C2. Privacy model with explicit revocation semantics.**
-A formal specification of what on-chain access control revokes (contract state, API-layer authorization) versus what it does not revoke (IPFS content access, key knowledge). A design of the additional key management layer required for end-to-end revocability. If implemented: a working key distribution mechanism.
+**C3. Reproducible empirical validation of the coordination layer.**  
+Executable contracts, tests, deployment scripts, gas measurements, controlled local-PoA latency characterization, storage/calldata metrics, and analytical security assessment—with all quantitative claims tied to committed artefacts. **Implementing Solidity is engineering necessary for C3, not the novelty claim itself.**
 
-**C3. Implemented and tested smart-contract coordination layer.**
-Executable Solidity contracts with caller authentication, Mocha/Hardhat test suite with logged passing results, gas cost measurements from Hardhat gas reporter, and block latency measurements from a reproducible local PoA chain. *This contribution can only be claimed after implementation and test execution.*
+### 7. Architecture (implementation-facing)
 
----
+**Principle:** Blockchain = coordination, authorization state, provenance, and submission accountability. Encrypted health payloads stay off-chain.
 
-### 7. Revised Architecture
+| Layer | Responsibility | Prompt 2 |
+|---|---|---|
+| Clients / reporters | Build canonical report encoding; compute HMAC commitment; optional encrypt+IPFS | Core commitment path required; encrypt/IPFS optional |
+| Application preprocessing | Schema checks, offline queue (design); not “edge hardware” | Document only unless needed for optional path |
+| **ReportFactory** | Create/register coordinator instances or report-type registries as designed | Core |
+| **ReportCoordinator** | Register reporters; accept anchors; emit provenance; bind reportId → commitment/CID/scope | Core |
+| **AccessControl** | Evaluate authorization 5-tuple; grant/revoke/expire; supervisory scope checks | Core |
+| **CompletenessVerifier** | expected units, received count, ratio, gap alert, late detection | Core |
+| Off-chain store | IPFS or mock content store for ciphertext | Optional integration |
+| Key channel | Wrap/distribute per-report keys out-of-band | Documented architecture; implementation optional |
 
-**Principle:** Blockchain as coordination and proof layer only. Zero raw health data on-chain.
+**Asymmetric participation:** Tier-1/2 submit and hold no consensus duty in the prototype trust model. Supervisory tiers gain scope-bounded grant/read rights. Validator set (local PoA) is an evaluation substrate, not a claimed national deployment.
 
-**Tier 1 — Community Capture:**  
-Lightweight browser-based client. AES-256-GCM encryption of surveillance payload using a per-report symmetric key. IPFS upload of ciphertext. MetaMask transaction signing. No validator responsibilities.  
-*Key design decision:* The symmetric key is generated client-side and distributed separately from the CID. The CID alone is not sufficient for decryption.
+### 8. Trust model
 
-**Tier 2 — Application-Layer Preprocessing:**  
-Next.js API middleware performing field validation, schema conformance, local queue buffering for offline periods. Label explicitly as application-layer preprocessing, not hardware edge nodes.
+- Institutional validators (evaluation network) honest-majority assumption for ledger integrity.
+- Reporter keys authenticate submission identity; compromise ⇒ false anchors from that identity.
+- Contract bytecode trusted as deployed (no silent upgrade path in prototype unless explicitly documented).
+- IPFS operators affect availability, not confidentiality of well-encrypted payloads.
+- Key channel compromise is catastrophic for confidentiality of affected reports; requires rotation design (future/optional).
 
-**Tier 3 — District Coordination:**  
-Supervisory batch aggregation. Batch anchoring transactions. Rework request management.
+### 9. Threat model (summary)
 
-**Tier 4 — Smart Contract Coordination Layer (implemented):**  
-Four contracts: ReportFactory, ReportCoordinator, AccessControl, CompletenessVerifier.  
-All sensitive functions protected by role-based caller modifiers.  
-Integrity commitment: HMAC-SHA-256(key, nonce, plaintext) — not SHA-256(plaintext).
+| Threat | Mitigation in scope | Explicit limit |
+|---|---|---|
+| Unauthorized anchor | Registration + role/scope checks | Stolen reporter key |
+| Unauthorized grant/revoke | Owner/supervisor-scope rules | Stolen owner/supervisor key |
+| Callerless ACL (historical listing bug) | Mandatory authz on mutating calls | — |
+| Plaintext hash grinding | HMAC with integrity key + nonce/reportId | Integrity key leak |
+| Revoked user with old key/CID | On-chain deny for honest apps | **No** crypto unreadability without rotation |
+| Metadata profiling | Minimize on-chain fields; document residue | Timing/address/CID metadata remain |
+| Missing/late reporting | Completeness gap/late events | Does not prove field quality |
+| Contract defects | Tests + simple design | Tests ≠ formal verification |
+| Content unavailability | Pinning assumptions documented | Not guaranteed by chain |
 
-**Tier 5 — Off-Chain Encrypted Storage:**  
-IPFS with content addressing. Private IPFS cluster for data sovereignty. Payloads encrypted before upload. CID stored on-chain; symmetric key distributed through separate key management channel.
+### 10. Privacy model (A–E) — binding
 
----
-
-### 8. Trust Model
-
-- Validators are institutional actors at Tier 3+ with stable infrastructure and institutional accountability.
-- Tier 1–2 actors are trusted for submission authenticity (authenticated by Ethereum address) but not for consensus.
-- The Ethereum smart contract code is trusted once deployed (immutable contracts, no upgrade keys).
-- IPFS gateway operators are trusted for availability but not required for confidentiality (encryption provides confidentiality independently).
-- Key distribution infrastructure is trusted for key delivery; its compromise is a system threat requiring key rotation.
-
----
-
-### 9. Threat Model
-
-| Threat | Asset targeted | Mitigation | Limitation |
+| ID | Name | Meaning | Prototype |
 |---|---|---|---|
-| Unauthorized anchor submission | Provenance integrity | Reporter registration + `onlyRegisteredReporter` modifier | Compromised reporter key can submit false anchors |
-| Unauthorized access grant | Access control integrity | `onlyReportOwner` modifier on grantAccess | Reporter key compromise enables false grants |
-| IPFS content access by revoked party | Data confidentiality | Key rotation after revocation (design; not yet implemented) | Without key rotation, revocation is on-chain state only |
-| SHA-256 re-identification from on-chain hash | Privacy | Replace with HMAC-keyed commitment | Low-entropy records remain at some risk |
-| Metadata correlation (timing, reporter, tier) | Surveillance pattern privacy | Acknowledge as limitation; propose batching to reduce timing granularity | Not fully mitigated by the current design |
-| Validator collusion (PoA) | Ledger integrity | f < n/2 Byzantine tolerance; institutional validator accountability | Small validator set increases collusion risk |
-| Smart contract bug | All guarantees | Formal verification (future); comprehensive test suite (implemented) | Test suite does not prove correctness |
-| IPFS content unavailability (GC, de-pinning) | Data availability | Pinning service; institutional IPFS nodes | IPFS availability is not guaranteed |
-| Erasure requirement (regulatory) | Compliance | Cryptographic deletion (key destruction) | On-chain hashes and metadata persist |
+| **A** | Ledger authorization | `granted`/expiry/role-scope state consulted by honest applications and tests | **Implemented on-chain** |
+| **B** | Ciphertext availability | Party with CID may fetch ciphertext from content network/store | Optional IPFS; treat as available if CID known |
+| **C** | Decryption authorization | Ability to decrypt = possession of content key (and successful AEAD) | Optional crypto path |
+| **D** | Key distribution | How content keys reach grantees (e.g., public-key wrap out-of-band) | **Documented**; implement only if optional path built |
+| **E** | Key revocation/rotation | Making old keys insufficient (re-encrypt, new CID, redistribute) | **Not claimed**; future work |
 
----
+**Binding honesty statements for Prompt 2 and the paper:**
 
-### 10. Privacy Model
+- On-chain `revoke` / `expire` affect **A** only.
+- They do **not** remove **B** for a known CID.
+- They do **not** retract **C** if the key was already distributed.
+- Do not claim end-to-end or cryptographic revocation unless **E** is implemented and tested.
 
-**A. Ledger authorization:** Smart contract access state (`permissions[reportId][grantee].granted`). Controls what the application API returns. Does NOT prevent direct IPFS retrieval.
+### 11. Access control model (5-tuple)
 
-**B. Ciphertext availability:** IPFS content is publicly accessible by anyone with the CID. Privacy depends entirely on key confidentiality, not CID confidentiality.
-
-**C. Cryptographic decryption authorization:** Possession of the per-report symmetric key. Must be distributed through a separate key management channel (asymmetric wrapping using the grantee's public key is the standard approach).
-
-**D. Key distribution:** Symmetric keys are distributed out-of-band using the grantee's public key (ECIES or RSA-OAEP). On-chain `grantAccess()` triggers key distribution in the application layer.
-
-**E. Key revocation/rotation:** On `revokeAccess()`, the application layer must trigger key rotation: re-encrypt the payload under a new key using proxy re-encryption or by fetching the ciphertext, decrypting, re-encrypting, re-uploading to IPFS, updating the CID on-chain, and distributing the new key only to remaining authorized parties. This is architecturally specified; implementation complexity is non-trivial.
-
-**Honest statement:** The current Solidity contract listings do NOT implement B, C, D, or E. They implement only A. The revised paper must clearly state this distinction.
-
----
-
-### 11. Access Control Model
+Authorization decision:
 
 ```
-Roles: REPORTER (Tier 1–2), SUPERVISOR (Tier 3), REGIONAL (Tier 4), NATIONAL (Tier 5), ADMIN
-
-Report ownership: The address that calls anchorReport() is the report owner.
-
-Permissions:
-- REPORT_OWNER can call grantAccess(reportId, grantee, expiry, tierScope)
-- REPORT_OWNER can call revokeAccess(reportId, grantee)
-- SUPERVISOR and above can call grantAccess for reports in their administrative scope
-- Any address can call checkAccess() (read-only)
-
-Scope enforcement:
-- tierScope in Permission struct restricts which tier roles can receive a grant
-- checkAccess() returns false if caller's tier is above the tierScope ceiling
+Allow(actor, op, report) iff
+  ValidRegistration(actor) when required
+  ∧ RoleAllows(actor.role, op)
+  ∧ ScopeCovers(actor.adminScope, report.scope)   // hierarchical administrative scope
+  ∧ ReportScopeAllows(report.scope, op, grantee.scope?) // for grants: grantee scope constraints
+  ∧ OperationSpecificRules(op, report, actor)
 ```
 
-This model requires:
-- A role registry mapping Ethereum addresses to roles
-- `onlyRole(SUPERVISOR)` or similar modifier on supervisory functions
-- Tier-scope enforcement in `checkAccess()`
+**Roles (minimum):** `ADMIN`, `REPORTER`, `SUPERVISOR`, `REGIONAL`, `NATIONAL` (names may map 1:1 to tier enums).
 
----
+**Operations that MUST be enforced in tests:**
 
-### 12. Revocation Semantics
+| Operation | Who (illustrative rules) |
+|---|---|
+| `registerReporter` | `ADMIN` (or bootstrap admin) only |
+| `anchorSubmit` | Registered `REPORTER` whose **adminScope** matches **report.scope** (or allowed child scope policy as specified in code comments) |
+| `grant` | Report owner **or** supervisor+ with scope covering report; grantee must be eligible for requested capability and scope |
+| `revoke` | Same as grant authority class for that report |
+| `expire` / time check | `checkAccess` false after `expiry`; optional keeper/anyone calling a pure view |
+| `supervisoryAccess` | Supervisor+ with covering scope may read authorization/provenance needed for oversight per policy (not automatic ciphertext rights) |
+| `crossBoundaryAccess` | Actor whose scope does **not** cover report.scope → **DENY** for mutate and for privileged reads |
+| `unauthorizedActor` | No role / unknown address → **DENY** all mutating ops |
 
-**On-chain revocation** (implemented in listing): Sets `granted=false`. Effect: `checkAccess()` returns false. The application API (if consulting the contract) will not return the CID or key.
+**Do not** implement “security” solely as unscoped `onlyRole` modifiers. Scope is first-class.
 
-**What revocation does NOT do:**
-- Does not prevent a party who already has the CID from fetching from IPFS directly
-- Does not recall a symmetric key already distributed to the grantee
-- Does not re-encrypt the payload
+**Report identity:** `reportId` (bytes32) derived from canonical fields or assigned at anchor time; owner recorded at first accepted anchor.
 
-**Full revocation** (required for strong privacy guarantee, not yet implemented):
-1. Call `revokeAccess()` on-chain
-2. Fetch the encrypted payload from IPFS
-3. Decrypt using current key
-4. Generate a new symmetric key
-5. Re-encrypt the payload
-6. Upload re-encrypted payload to IPFS → new CID
-7. Call an `updateAnchor()` function to register the new CID (requires contract modification)
-8. Distribute the new key to all currently-authorized parties (excluding the revoked party)
+### 12. Integrity commitment (HMAC) — unambiguous specification
 
-This is the correct design for meaningful revocation. It adds significant operational complexity. If it cannot be implemented, the paper must state clearly that blockchain revocation is application-layer enforcement only, not cryptographic enforcement.
+Replace plaintext `SHA-256(payload)`.
 
----
+#### 12.1 Canonical data representation `canonicalBytes`
 
-### 13. Completeness Verification Model (Corrected)
+- UTF-8 JSON **or** tightly specified field concatenation; **one** MUST be chosen in Prompt 2 and frozen in `prototype/docs/CANONICAL_ENCODING.md`.
+- Recommended default: **CIP-JSON**: object keys sorted lexicographically, no insignificant whitespace, numbers in minimal decimal form, fixed field set for each `reportTypeId`.
+- Include at least: `reportTypeId`, `reportingUnitId`, `periodId`, `schemaVersion`, and payload body fields used in tests.
+- `canonicalBytes = UTF8(CIP-JSON(report))`.
 
-The `CompletenessVerifier` contract, as designed in the listings, operates as follows:
+#### 12.2 Keys and identifiers
 
-- **Input:** Anchor events (`anchorReport()` calls) received from registered reporting units within a defined period
-- **Output:** `receivedCount / expectedCount` ratio; `GapAlert` event if ratio < threshold at period close
-- **What it verifies:** Whether the expected number of anchoring transactions have been submitted within the period
-- **What it does NOT verify:** Whether individual report payloads contain all required fields (this requires either trusted off-chain attestation or ZKP, neither of which is implemented)
+| Item | Definition |
+|---|---|
+| `integrityKey` | 256-bit key **not** placed on-chain in cleartext. In tests: provisioned per reporting domain or per test fixture. Distinct from optional AES content key when both exist. |
+| `reportNonce` | 128-bit unique per report attempt (or monotic counter ‖ unitId ‖ periodId); bound into MAC. |
+| `reportId` | `keccak256(abi.encode(reportingUnitId, periodId, reportNonce, reportTypeId))` or equal documented derivation; unique in coordinator. |
 
-**Honest claim:** The contract enforces *submission counting accountability* — it detects whether expected reporters have submitted anchors — but does not enforce *payload completeness*. This is still a legitimate surveillance accountability mechanism; it just needs to be described accurately.
+#### 12.3 What is committed
 
----
+```
+mac = HMAC-SHA-256(integrityKey, reportNonce || canonicalBytes)
+commitment = bytes32(mac)   // or keccak256(mac) if bytes32 packing required—document choice
+```
 
-### 14. Selective Anchoring Mechanism (Precise Definition)
+On-chain anchor stores at minimum:
 
-**Selective anchoring** in this architecture means:
-- Only cryptographic hashes (HMAC commitments), IPFS CIDs, access-control state, provenance events, completeness counts, and audit records are stored on-chain
-- The triggering event for anchoring is the successful AES-256-GCM encryption and IPFS upload of a surveillance payload
-- The anchoring policy is hierarchical: Tier 1 reporters anchor individual submissions; Tier 3 coordinators can batch-anchor multiple submissions in a single transaction
-- No raw epidemiological content (case records, patient identifiers, disease codes in plaintext, geographic coordinates) is stored on-chain
+- `reportId`
+- `commitment`
+- `reporter` address
+- `scopeId` / hierarchical scope
+- `timestamp` (block time)
+- `optional cid` (`bytes`/`string`, empty if data-layer skipped)
+- `periodId`
+- `reportingUnitId` (or hash thereof if size-sensitive—document)
 
----
+**Never** store `integrityKey` or plaintext payload on-chain.
 
-### 15. Implementation Plan
+#### 12.4 Verification model
 
-**Phase 1 (Required for minimal defensible paper):**
-1. Implement `ReportCoordinator.sol` with `onlyRegisteredReporter` modifier and `registerReporter()` admin function
-2. Implement `AccessControl.sol` with `onlyReportOwner`/`onlyAdmin` modifiers; HMAC-keyed commitment instead of SHA-256(plaintext)
-3. Implement `CompletenessVerifier.sol` with `closePeriod()` and `GapAlert` threshold logic completed
-4. Implement `ReportFactory.sol` as coordinator registry
-5. Write Hardhat test suite: ≥24 test cases covering authorization, revocation, expiry, completeness
-6. Write deployment script (Hardhat ignition or migrations)
-7. Run Hardhat gas reporter; record output
-8. Measure block confirmation time on local Hardhat node
+- **Off-chain verifier** with `integrityKey` recomputes `canonicalBytes` and HMAC; compares to on-chain `commitment`.
+- Smart contracts **do not** recompute HMAC over plaintext (they never see plaintext).
+- Optional: store `commitmentAlgorithmId = 1` for HMAC-SHA-256-v1 to allow future algs without ambiguity.
 
-**Phase 2 (Required for full privacy claim):**
-9. Implement client-side AES-256-GCM encryption with `crypto.subtle` (Web Crypto)
-10. Implement IPFS upload/download with `ipfs-http-client`
-11. Design and document key distribution mechanism (at minimum: pseudocode + design document)
+#### 12.5 Key rotation effect
 
-**Phase 3 (Optional enhancement):**
-12. Implement proxy re-encryption or key-rotation pathway for meaningful revocation
-13. Implement batch anchoring in ReportFactory
+- Rotating `integrityKey` **does not** rewrite historical anchors; old commitments verify only with the key version applicable at submission time.
+- Maintain `integrityKeyVersion` off-chain (and optionally a version id on-chain) so verifiers select the correct key.
+- Rotation is **not** content revocation; it limits forging new valid commitments under the old key once reporters receive the new key via the admin channel.
 
----
+### 13. Completeness model (submission accountability only)
 
-### 16. Evaluation Methodology
+**In scope:**
 
-**EQ1: Smart contract functional correctness**  
-Method: Hardhat test suite with Mocha.  
-Artefact: test file + `npx hardhat test` output logged to file.  
-Claim type: functional verification.
+- Admin/supervisor defines `periodId → expectedReportingUnitSet` (or expected count with registered unit list).
+- On each accepted `anchorSubmit` for that period/unit, mark unit received (idempotent per unit/period policy: first valid anchor counts).
+- `ratio = receivedUnits / expectedUnits`.
+- At `closePeriod` (or query): if `ratio < threshold`, emit `GapAlert(periodId, missingUnits[])`.
+- **Delayed submission:** if anchor arrives after `periodDeadline` but before `lateWindowEnd`, count as `LATE` (still received for accountability) or per documented policy; if after `lateWindowEnd`, reject or count `TOO_LATE` without satisfying on-time ratio—**document one policy in code**.
 
-**EQ2: Gas cost characterization**  
-Method: Hardhat gas reporter plugin.  
-Artefact: gas reporter output table.  
-Claim type: measured (not estimated).  
-Metric: gas units per function call; ETH and USD estimate at stated gas price and ETH/USD rate.
+**Out of scope:**
 
-**EQ3: Block confirmation latency**  
-Method: Local Hardhat/Ganache PoA network; measure `transaction.blockNumber` minus submission timestamp across N=50 transactions.  
-Artefact: script + output log.  
-Claim type: measured.  
-Note: Label explicitly as local PoA, not Rinkeby.
+- Inspecting encrypted or plaintext clinical fields for mandatory epidemiology completeness.
+- Claiming behavioral “incentives” without a behavioral study.
+- ZKP proofs of field completeness.
 
-**EQ4: Storage comparison**  
-Method: Compute `payload_size_bytes / calldata_size_bytes` for the 10 representative report types.  
-Artefact: script + output.  
-Claim type: analytical calculation (not experimental, but transparent).
+### 14. Selective anchoring (definition)
 
-**EQ5: IPFS retrieval latency (optional)**  
-Method: Script measuring CID resolution + content retrieval time over N=50 retrievals.  
-Artefact: script + log.  
-Note: Distinguish local daemon from distributed gateway. Do not extrapolate to production LMIC conditions without evidence.
+On-chain data are limited to coordination artefacts: commitments, optional CIDs, scopes, roles, permissions, provenance events, period accounting. Anchoring is “selective” in **content class** (metadata vs payload) and **policy** (who may anchor which scope; optional batching later). It is **not** marketed as a new storage primitive beyond hash-pointer hybrids; specificity is hierarchical surveillance accountability + honest privacy boundaries.
 
-**EQ6: Usability (if re-conducted)**  
-Method: SUMI with actual implemented prototype; ≥26 participants; documented task list; ethics approval.  
-Artefact: anonymized response data; SUMI analysis output.
+### 15. Implementation scope
 
----
+#### 15.1 Core prototype (required)
 
-### 17. Workload Model
+- Solidity: `ReportCoordinator`, `AccessControl`, `ReportFactory`, `CompletenessVerifier`
+- Reporter registration; role/scope authorization; grant/revoke/expiry
+- Provenance events; submission-counting completeness + gap/late behavior
+- Hardhat project: compile, test, deploy scripts
+- Gas measurements (reporter plugin or equivalent)
+- Controlled **local PoA / local network** latency measurements
+- Docs: encoding, A–E model, authz matrix
 
-For gas/latency evaluation:
-- 10 representative surveillance report types based on Ethiopian PHEM reporting templates
-- Sizes: single case notification (~2.4 KB plaintext), weekly district aggregate (~48.6 KB)
-- Transaction types: individual anchor, batch anchor (5 reports), access grant, access revoke, completeness registration, completeness query
-- N=50 transactions per type for statistical stability
+#### 15.2 Optional data-layer integration
 
-For usability evaluation (if conducted):
-- Representative tasks: submit a case report, grant access to a supervisor, view completeness status, request rework on a submission
-- Task list pre-specified and documented
+- AES-256-GCM
+- IPFS upload/download
+- CID field populated on anchor
 
----
+#### 15.3 Documented, not required to implement
+
+- Key distribution protocol detail (message formats, KMS)
+- Application UI / Next.js
+- Full key rotation / re-encrypt pipeline
+
+#### 15.4 Explicit non-goals (Prompt 2)
+
+ZKP; FHIR; Layer-2; edge hardware; proxy re-encryption; full cryptographic revocation; national deployment; multi-consensus benchmarks; SUMI / human subjects; mainnet/Rinkeby; reusing historical numeric results.
+
+### 16. Evaluation design
+
+**Mapping rule:** every retained RQ maps to evaluation → metric → artefact.
+
+| RQ | Evaluation | Metrics | Artefact paths (planned) |
+|---|---|---|---|
+| RQ1 | Authz matrix tests; anchor success/fail; calldata size; gas | pass/fail cases; gas units; bytes; reduction ratio vs full payload baseline | `prototype/test/*`, `evaluation/results/gas_*`, `evaluation/results/storage_*` |
+| RQ2 | Grant/revoke/expiry tests; threat/privacy narrative; optional encrypt path | correct A-state transitions; documented B–E limits | tests + `evaluation/analysis/threat_model.md` |
+| RQ3 | Missing unit, late unit, full compliance scenarios | counts, ratio, alerts, late flags | `prototype/test/completeness*`, logs under `evaluation/results/` |
+
+**Methods allowed:**
+
+1. Functional correctness (Hardhat).
+2. Gas measurements (local).
+3. Local controlled latency (document block time config; **do not** generalize as “Ethereum performance”).
+4. Storage/calldata measurements.
+5. Optional IPFS retrieval measurements (document daemon vs gateway).
+6. Analytical security/threat assessment.
+
+**N=50:** If used, characterize **observed distributions** (mean, sd, min, max, percentiles). **Do not** claim “statistical stability” or population inference solely from N=50 local runs.
+
+**SUMI:** Optional future only. **Do not** reuse unsupported historical SUMI numbers.
+
+### 17. Workload model
+
+- Synthetic report types (≥3): small case notification, medium aggregate, larger weekly aggregate (sizes documented).
+- Ops: register, anchor, grant, revoke, expire-elapse, completeness register/close/query.
+- Latency sample size: configurable; default up to N=50 per op type for distribution description.
+- No real patient data.
 
 ### 18. Baselines
 
-| Baseline | Type of comparison | Notes |
-|---|---|---|
-| Direct on-chain storage (all data as calldata) | Analytical | Storage size and gas cost computation |
-| Conventional centralized database with audit log | Analytical | Trust model and availability argument |
-| Signed append-only transparency log | Analytical | Integrity and auditability comparison |
-| Hyperledger Fabric private data collections | Analytical | Platform comparison (no benchmark required) |
+| Baseline | Comparison type in revised paper |
+|---|---|
+| Direct on-chain storage of payload bytes | **Quantitative** (gas/calldata vs anchor) when measured/calculated consistently |
+| Centralized DB + audit log | Analytical (trust, integrity, multi-party audit) |
+| Signed transparency log | Analytical (programmability of ACL/completeness vs bare log) |
+| Hyperledger Fabric private data | Analytical platform comparison |
 
-Experimental baseline is not required for all comparisons; analytical comparison is scientifically sufficient if clearly labeled.
-
----
+Only direct on-chain storage is a required quantitative baseline unless others are actually benchmarked.
 
 ### 19. Metrics
 
-| Metric | Unit | Method |
+| Metric | Unit | Notes |
 |---|---|---|
-| Gas cost per anchor | gas units | Hardhat gas reporter |
-| Gas cost per access grant/revoke | gas units | Hardhat gas reporter |
-| Block confirmation latency | seconds | Script on local PoA |
-| On-chain calldata size | bytes | Measured from transaction |
-| Payload size | bytes | Measured from test payloads |
-| Storage reduction ratio | dimensionless (×) | Payload / calldata |
-| IPFS retrieval latency | ms | Script with timing |
-| Test pass rate | fraction | Mocha output |
-| SUMI scores | 10–73 per scale | SUMI instrument |
+| Test outcomes | pass/fail per case | Commit logs |
+| Gas per op | gas | Local EVM |
+| Latency | ms or s | Local chain only; label environment |
+| Calldata / storage footprint | bytes | Per tx / per anchor |
+| Reduction ratio | × | vs direct payload baseline |
+| Completeness ratio | [0,1] | received/expected |
+| Gap/late events | count | Per scenario |
+| IPFS latency (optional) | ms | Conditional |
 
----
+### 20. Required experiments (new evidence only)
 
-### 20. Required Experiments
+| Experiment | Status at blueprint time |
+|---|---|
+| Full Hardhat test suite | Not run (to be created) |
+| Gas reporter | Not run |
+| Local latency | Not run |
+| Storage/calldata script | Not run |
+| Optional IPFS | Not run |
+| SUMI | Out of scope unless new ethics-backed study |
 
-| Experiment | Required for which claim | Status |
-|---|---|---|
-| Hardhat test suite run | C3 (functional correctness) | Not yet conducted |
-| Hardhat gas reporter | C3 (gas cost) | Not yet conducted |
-| Block latency measurement (local PoA) | C3 (performance) | Not yet conducted |
-| IPFS latency (local daemon) | C3 (retrieval performance) | Not yet conducted |
-| SUMI evaluation with implemented prototype | If usability claim retained | Not yet conducted |
+### 21–22. Tables and figures (planning)
 
----
+Prefer artefacts generated from scripts. No fabricated charts. Architecture and A–E diagrams may be drawn without experiments. Omit SUMI figures unless a new study exists.
 
-### 21. Expected Tables
-
-1. **Technology stack** — languages, frameworks, versions (can be created without experiments)
-2. **Storage comparison** — payload size vs. calldata size vs. reduction ratio (requires test payloads)
-3. **Gas cost table** — per-function gas cost (requires Hardhat gas reporter)
-4. **Block confirmation latency** — per-transaction latency statistics (requires local chain measurement)
-5. **Threat model table** — threat / mitigation / limitation (can be created without experiments)
-6. **SUMI results table** — mean scores, CIs (requires usability study)
-7. **Related work comparison** — dimensions vs. prior work (can be updated now)
-8. **Platform comparison** — Ethereum vs. Hyperledger Fabric vs. transparency log (can be updated now)
-
----
-
-### 22. Expected Figures
-
-1. Five-tier architecture diagram (redesign from Mermaid source; create actual image)
-2. Selective anchoring data flow (from Mermaid source)
-3. Smart contract interaction topology (from Mermaid source)
-4. Privacy layer model (replace ZKP component with key management design)
-5. SDRM process diagram (straightforward to create)
-6. Prototype software architecture
-7. Gas cost bar chart (from gas reporter output)
-8. Block latency bar chart (from measurement data)
-9. SUMI mean scores with CI (from usability study)
-10. SUMI boxplots (from usability study)
-
-All placeholder figures must be replaced. Figures 1–6 can be created as vector diagrams from the Mermaid source code already in the manuscript. Figures 7–10 require experimental data.
-
----
-
-### 23. Reproducibility Strategy
-
-1. All smart contracts committed to `prototype/contracts/`
-2. All test files committed to `prototype/test/`
-3. Hardhat configuration committed to `prototype/hardhat.config.js`
-4. `package.json` with pinned dependency versions
-5. All measurement scripts committed to `evaluation/scripts/`
-6. All raw output logs committed to `evaluation/results/`
-7. Analysis scripts (R or Python) committed to `evaluation/analysis/`
-8. `evaluation/README.md` documenting all commands to reproduce results
-9. Node.js version, Solidity version, Hardhat version, IPFS version recorded in README
-
----
-
-### 24. Limitations (Honest, Post-Revision)
-
-1. Block confirmation latency measured on a local PoA chain; production multi-validator PoA performance under LMIC network conditions is untested.
-2. IPFS latency measured with local daemon; distributed gateway performance under variable LMIC bandwidth is not characterized.
-3. Key management design is specified but not fully implemented (Phase 2); full cryptographic revocation is a future requirement.
-4. Prototype evaluated with synthetic payloads; validation against real PHEM reporting data requires institutional data access.
-5. SUMI evaluation (if conducted) is single-site; multi-site generalizability is unestablished.
-6. Comparative consensus evaluation is analytical; empirical workload benchmarks for PoA vs. PBFT vs. DPoS are future work.
-7. ZKP, FHIR integration, Layer-2 rollup, and dedicated edge node deployment are future engineering tasks.
-8. Production deployment, longitudinal operation, and staff turnover effects are not evaluated.
-
----
-
-### 25. Recommended Manuscript Section Structure
+### 23. Reproducibility strategy
 
 ```
-1. Introduction
-   1.1 Problem statement (LMIC DEWS architectural failures)
-   1.2 Research gap (precise)
-   1.3 Contributions (C1, C2, C3 — 3 contributions only)
-   1.4 Paper organization
-
-2. Background and Related Work
-   2.1 Blockchain foundations for health surveillance
-   2.2 Hybrid storage patterns (hash-pointer, IPFS-blockchain)
-   2.3 Blockchain access control
-   2.4 LMIC disease surveillance and DHIS2
-   2.5 Architectural gap analysis (table with Hyperledger Fabric included)
-
-3. Research Methodology
-   3.1 Research design (SDRM)
-   3.2 Scope and methodological boundaries
-
-4. Proposed Architecture
-   4.1 Design principles
-   4.2 Five-tier topology
-   4.3 Selective anchoring mechanism (precise definition)
-   4.4 Privacy model (A–E explicit separation)
-   4.5 Access control model (with honest limitations)
-   4.6 Completeness verification model (event-counting, corrected)
-   4.7 Threat model
-   4.8 Consensus design rationale
-
-5. Prototype Implementation
-   5.1 Technology stack (with versions)
-   5.2 Smart contract architecture
-   5.3 Contract listings (correct, with modifiers)
-   5.4 Test suite
-   5.5 Deployment environment
-
-6. Evaluation
-   6.1 Evaluation framework (EQ1–EQ5)
-   6.2 Functional correctness (test results)
-   6.3 Gas cost and storage (gas reporter output)
-   6.4 Performance (block latency, IPFS latency)
-   6.5 Security analysis (threat-to-mitigation)
-   6.6 Usability (SUMI, if re-conducted)
-
-7. Discussion
-   7.1 Interpretation of results
-   7.2 Comparison with prior work
-   7.3 Limitations
-
-8. Conclusion and Future Work
-   8.1 Summary of contributions
-   8.2 Future work: ZKP, FHIR, Layer-2, edge nodes, key management, multi-site evaluation
+prototype/contracts/
+prototype/test/
+prototype/scripts/
+prototype/hardhat.config.js
+prototype/package.json  # pinned versions
+prototype/docs/CANONICAL_ENCODING.md
+prototype/docs/AUTHZ_MATRIX.md
+evaluation/scripts/
+evaluation/results/
+evaluation/analysis/
+evaluation/README.md    # exact commands, tool versions, hardware notes
 ```
+
+Record: Node, solc, Hardhat, OS; network config (block time); seeds if any; commands; output files.
+
+### 24. Limitations (honest)
+
+Local chain ≠ public Ethereum performance; optional IPFS local ≠ LMIC WAN; key distribution/rotation may be design-only; synthetic data only; no national pilot; no ZKP/FHIR/L2; on-chain revoke ≠ crypto revoke; completeness ≠ field completeness; metadata leakage remains; historical manuscript metrics unreproduced.
+
+### 25. Manuscript structure (unchanged intent, tightened claims)
+
+Intro (problem, gap, C1–C3) → Related work (strong comparators) → Methods/scope → Architecture (selective anchoring, A–E, authz 5-tuple, HMAC, completeness) → Implementation (only what exists) → Evaluation (RQ-mapped, new evidence) → Discussion → Conclusion/future work.
+
+Label every quantitative statement with evidence pointer. Separate “Historical claims (unsupported)” footnote or appendix if discussing the original manuscript.
+
+### 26. Claims policy
+
+**Allowed after Prompt 2 success:** statements directly supported by tests/logs/scripts listed in the evaluation map; analytical claims labeled as such; A–E limitations.
+
+**Prohibited without additional evidence:** historical gas/SUMI/Rinkeby/IPFS numbers as facts; ZKP/FHIR/L2/edge as done; crypto revocation; field-level completeness; incentive/behavior claims; mainnet performance; “first ever” absolute novelty; national deployment success.
 
 ---
 
-*This blueprint is based solely on evidence in the original/ directory and is designed to produce a scientifically defensible paper. No results, implementations, or experiments are described as having occurred unless they have. No claims are made beyond what the evidence supports.*
+*This revised blueprint supersedes the Prompt 1 blueprint for implementation planning. It invents no results. `original/` remains immutable baseline.*
